@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting…</title>
+    <meta name="robots" content="noindex" />
+    <script>
+      // SPA routing fallback (useful for static hosts that serve 200.html for
+      // unknown routes). Redirect back to the app entry while preserving the
+      // originally requested path.
+      (function () {
+        var path = window.location.pathname + window.location.search + window.location.hash;
+        var target = '/?redirect=' + encodeURIComponent(path);
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    Redirecting…
+  </body>
+</html>

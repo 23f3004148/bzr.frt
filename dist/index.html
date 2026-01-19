@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BUUZZER.io | AI Interview Copilot - Real-Time Guidance</title>
+    <meta name="description" content="Ace every interview with BUUZZER's AI-powered real-time guidance. Live transcription, STAR framework prompts, and stealth console for confident responses." />
+    <meta property="og:title" content="BUUZZER.io | AI Interview Copilot" />
+    <meta property="og:description" content="Real-time AI guidance for job interviews. Stay confident, speak authentically." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@buuzzerio" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <link rel="canonical" href="https://bzzr.vercel.app" />
+    <link rel="icon" type="image/svg+xml" href="/Buuzzer_LOGO.svg" />
+
+    <!--
+      SPA redirect helper:
+      Some static hosts (and a few auth flows) land on /200.html or /404.html
+      and then redirect back to /?redirect=... so the app can restore the
+      original route on first load.
+    -->
+    <script>
+      (function () {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var redirect = params.get('redirect');
+          if (!redirect) return;
+          params.delete('redirect');
+          var rest = params.toString();
+          var decoded = decodeURIComponent(redirect);
+          var target = decoded;
+          if (rest) {
+            target += (decoded.indexOf('?') === -1 ? '?' : '&') + rest;
+          }
+          window.history.replaceState(null, '', target);
+        } catch (e) {
+          // no-op
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/main-DTVqUhrl.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/main-CqFmSv1C.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

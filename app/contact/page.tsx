@@ -1,0 +1,403 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Header from '@/components/common/Header';
+import Footer from '@/app/landing-page/components/Footer';
+import Icon from '@/components/ui/AppIcon';
+import SpaLink, { spaNavigate } from '../../components/common/SpaLink';
+import { fetchSiteInfo, submitContactForm } from '@/services/backendApi';
+import { SiteInfo } from '@/types';
+
+const ContactPage = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    company: '',
+    subject: '',
+    message: '',
+    inquiryType: 'general',
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [siteInfo, setSiteInfo] = useState<SiteInfo | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchSiteInfo()
+      .then((info) => setSiteInfo(info))
+      .catch(() => setSiteInfo(null));
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await submitContactForm({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: `${formData.subject.trim()} (${formData.inquiryType})`,
+        message: `${formData.message.trim()}${formData.company ? `\n\nCompany: ${formData.company}` : ''}`,
+      });
+      setSubmitted(true);
+      // Reset form after short delay
+      setTimeout(() => {
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          subject: '',
+          message: '',
+          inquiryType: 'general',
+        });
+        setSubmitted(false);
+      }, 3000);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const whatsappNumber = siteInfo?.whatsappNumber || '+91 98765 43210';
+  const supportEmail = siteInfo?.contactEmail || 'buuzzer.io@gmail.com';
+  const supportPhone = siteInfo?.supportPhone || whatsappNumber;
+  const whatsappLink = `https://wa.me/${whatsappNumber.replace(/\\D/g, '')}`;
+  const contactLocation =
+    siteInfo?.contactLocation ||
+    'East Bangalore, Mahadevapura Zone (approx. 20 km from MG Road), India';
+  const locationParts = contactLocation.split(',').map((p) => p.trim()).filter(Boolean);
+  const primaryLocation = locationParts.shift() || contactLocation;
+  const secondaryLocation = locationParts.join(', ');
+
+  const contactMethods = [
+    {
+      icon: 'EnvelopeIcon',
+      title: 'Email Us',
+      description: 'Our team responds within 24 hours',
+      value: supportEmail,
+      link: `mailto:${supportEmail}`,
+    },
+    {
+      icon: 'ChatBubbleLeftRightIcon',
+      title: 'Live Chat',
+      description: 'Available Mon-Fri, 9am-6pm PST',
+      value: whatsappNumber ? 'Chat on WhatsApp' : 'Start Chat',
+      link: whatsappLink || `mailto:${supportEmail}`,
+    },
+    {
+      icon: 'PhoneIcon',
+      title: 'Call Us',
+      description: 'For urgent enterprise inquiries',
+      value: supportPhone,
+      link: `tel:${supportPhone.replace(/\\s+/g, '')}`,
+    },
+  ];
+
+  const offices = [
+    {
+      city: 'Bengaluru',
+      address: primaryLocation,
+      region: secondaryLocation || undefined,
+      country: '',
+    },
+  ];
+
+  return (
+    <div className="copilot-theme min-h-screen bg-background">
+      <Header />
+      
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-primary/10 via-background to-accent/5 py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center">
+            <h1 className="font-headline text-5xl font-bold text-foreground mb-4">
+              Get in Touch
+            </h1>
+            <p className="font-body text-xl text-muted-foreground max-w-2xl mx-auto">
+              Have questions about Interview Copilot? We're here to help you succeed.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Methods */}
+      <section className="py-12 border-b border-border">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {contactMethods.map((method) => (
+              <a
+                key={method.title}
+                href={method.link}
+                className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-all hover:border-primary group"
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <Icon name={method.icon as any} size={28} className="text-primary" />
+                  </div>
+                  <h3 className="font-headline text-xl font-bold text-foreground mb-2">{method.title}</h3>
+                  <p className="font-body text-sm text-muted-foreground mb-3">{method.description}</p>
+                  <p className="font-semibold text-primary group-hover:underline">{method.value}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Main Contact Form */}
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Form */}
+            <div>
+              <h2 className="font-headline text-3xl font-bold text-foreground mb-4">
+                Send Us a Message
+              </h2>
+              <p className="font-body text-muted-foreground mb-8">
+                Fill out the form below and our team will get back to you within 24 hours.
+              </p>
+
+              {/* Success Message */}
+              {submitted && (
+                <div className="mb-6 p-6 bg-green-50 border-2 border-green-500 rounded-xl animate-fade-in">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                        <Icon name="CheckCircleIcon" size={28} className="text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-headline text-xl font-bold text-green-900 mb-2">
+                        Thank You for Reaching Out!
+                      </h3>
+                      <p className="font-body text-green-800 mb-1">
+                        We've received your message and appreciate you contacting us.
+                      </p>
+                      <p className="font-body text-green-700 text-sm">
+                        Our team will review your inquiry and get back to you within 24 hours.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {error && (
+                <div className="mb-6 rounded-xl border-2 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="name" className="block font-medium text-foreground mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block font-medium text-foreground mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="company" className="block font-medium text-foreground mb-2">
+                      Company
+                    </label>
+                    <input
+                      type="text"
+                      id="company"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="Your Company"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="inquiryType" className="block font-medium text-foreground mb-2">
+                      Inquiry Type *
+                    </label>
+                    <select
+                      id="inquiryType"
+                      name="inquiryType"
+                      value={formData.inquiryType}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="general">General Inquiry</option>
+                      <option value="support">Technical Support</option>
+                      <option value="enterprise">Enterprise Sales</option>
+                      <option value="partnership">Partnership</option>
+                      <option value="feedback">Product Feedback</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="subject" className="block font-medium text-foreground mb-2">
+                    Subject *
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="How can we help you?"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="message" className="block font-medium text-foreground mb-2">
+                    Message *
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    rows={6}
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    placeholder="Tell us more about your inquiry..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || submitted}
+                  className="w-full px-8 py-4 bg-accent text-accent-foreground rounded-lg font-semibold shadow-cta hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Sending...' : submitted ? '✓ Message Sent!' : 'Send Message'}
+                </button>
+              </form>
+            </div>
+
+            {/* Info Section */}
+            <div className="space-y-8">
+              {/* FAQ Quick Links */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <h3 className="font-headline text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                  <Icon name="QuestionMarkCircleIcon" size={24} className="text-primary" />
+                  Quick Answers
+                </h3>
+                <p className="font-body text-muted-foreground mb-4">
+                  Looking for immediate answers? Check out our FAQ section.
+                </p>
+                <SpaLink
+                  href="/landing-page#faq"
+                  className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
+                >
+                  View FAQ
+                  <Icon name="ArrowRightIcon" size={16} />
+                </SpaLink>
+              </div>
+
+              {/* Office Locations */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <h3 className="font-headline text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                  <Icon name="MapPinIcon" size={24} className="text-primary" />
+                  Our Offices
+                </h3>
+                <div className="space-y-4">
+                  {offices.map((office) => (
+                    <div key={office.city} className="pb-4 border-b border-border last:border-0 last:pb-0">
+                      <h4 className="font-semibold text-foreground mb-1">{office.city}</h4>
+                      <p className="text-sm text-muted-foreground">{office.address}</p>
+                      <p className="text-sm text-muted-foreground">{office.region}</p>
+                      <p className="text-sm text-muted-foreground">{office.country}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Business Hours */}
+              <div className="bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-primary-foreground">
+                <h3 className="font-headline text-xl font-bold mb-4 flex items-center gap-2">
+                  <Icon name="ClockIcon" size={24} />
+                  Business Hours
+                </h3>
+                <div className="space-y-2 font-body">
+                  {(siteInfo?.businessHours && siteInfo.businessHours.length
+                    ? siteInfo.businessHours
+                    : [
+                        'Monday - Friday: 9:00 AM - 6:00 PM PST',
+                        'Saturday: 10:00 AM - 4:00 PM PST',
+                        'Sunday: Closed',
+                      ]
+                  ).map((line) => (
+                    <div className="flex justify-between" key={line}>
+                      <span>{line.split(':')[0] || line}</span>
+                      <span className="font-semibold">{line.split(':').slice(1).join(':') || ''}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-sm opacity-90">
+                  Emergency support available 24/7 for enterprise customers.
+                </p>
+              </div>
+
+              {/* Social Links removed per requirements */}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-primary to-accent py-16">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <h2 className="font-headline text-4xl font-bold text-primary-foreground mb-4">
+            Ready to Ace Your Next Interview?
+          </h2>
+          <p className="font-body text-xl text-primary-foreground/90 mb-8">
+            Start your free trial today and experience real-time AI interview assistance.
+          </p>
+          <SpaLink
+            href="/landing-page#pricing"
+            className="inline-block px-8 py-4 bg-accent-foreground text-accent rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Start Free Trial
+          </SpaLink>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default ContactPage;
