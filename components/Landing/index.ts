@@ -1,0 +1,13 @@
+export { Header } from './Header';
+export { Footer } from './Footer';
+export { HeroSection } from './HeroSection';
+export { InterviewGapSection } from './InterviewGapSection';
+export { WhatItIsSection } from './WhatItIsSection';
+export { HowItWorksSection } from './HowItWorksSection';
+export { FeaturesSection } from './FeaturesSection';
+export { UseCasesSection } from './UseCasesSection';
+export { EthicsSection } from './EthicsSection';
+export { StatsSection } from './StatsSection';
+export { FAQSection } from './FAQSection';
+export { CTASection } from './CTASection';
+export { default as LandingPage } from './LandingPage';
